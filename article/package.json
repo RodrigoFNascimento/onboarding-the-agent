@@ -1,0 +1,9 @@
+{
+  "name": "onboarding-the-agent-article",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node build.mjs && node serve.mjs dist-preview 4173"
+  }
+}
