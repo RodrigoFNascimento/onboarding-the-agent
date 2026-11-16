@@ -9,13 +9,14 @@ in-memory storage, xUnit tests.
 - Format: `dotnet format`
 
 ## Conventions
-- Invalid input returns `TypedResults.ValidationProblem(...)`: a 400 with `ProblemDetails`.
-  Never throw exceptions for validation.
-- Other errors return `ProblemDetails` too: `TypedResults.Problem(...)` with the status code.
-- Get the current time from the injected `TimeProvider`. Never use `DateTime.Now` or
-  `DateTime.UtcNow`: tests need to control the clock.
-- Endpoints are static methods in `src/OrdersApi/Orders/OrderEndpoints.cs` that return
-  `TypedResults`, so tests can call them directly.
+- Invalid input returns `TypedResults.ValidationProblem(...)`: a 400 with
+  `ProblemDetails`. Never throw exceptions for validation.
+- Other errors return `ProblemDetails` too: `TypedResults.Problem(...)` with
+  the status code.
+- Get the current time from the injected `TimeProvider`. Never use
+  `DateTime.Now` or `DateTime.UtcNow`: tests need to control the clock.
+- Endpoints are static methods in `src/OrdersApi/Orders/OrderEndpoints.cs`
+  that return `TypedResults`, so tests can call them directly.
 
 ## Don'ts
 - Don't add NuGet packages without asking.
