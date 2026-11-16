@@ -14,6 +14,7 @@ class: title-slide
 ---
 
 <div
+  class="flex flex-col gap-[0.8rem]"
   v-motion
   :initial="{ y: 30, opacity: 0 }"
   :enter="{ y: 0, opacity: 1, transition: { delay: 150 } }"
@@ -53,7 +54,18 @@ Abre no PR, sem contexto. Um endpoint para cancelar pedido. Build verde, testes 
 
 # Três comentários no review
 
-<<< @/../examples/01-first-pr/src/FirstPr/CancelOrderEndpoint.cs#Cancel cs {all|9|4-5|all}
+<div class="grid">
+<div v-click.hide="3" style="grid-area: 1 / 1">
+
+<<< @/../examples/01-first-pr/src/FirstPr/CancelOrderEndpoint.cs#Cancel cs {all|9|4-5}
+
+</div>
+<div v-click="3" style="grid-area: 1 / 1">
+
+<<< @/../examples/01-first-pr/tests/FirstPr.Tests/UnitTest1.cs#Test1 cs {2}
+
+</div>
+</div>
 
 <div class="grid mt-4">
 <p v-click="[1, 2]" class="lead" style="grid-area: 1 / 1"><b>Review:</b> <code>DateTime.Now</code>? Aqui a gente usa <code>TimeProvider</code>.</p>
@@ -65,7 +77,7 @@ Abre no PR, sem contexto. Um endpoint para cancelar pedido. Build verde, testes 
 Mostra o código rapidinho, sem ler linha por linha.
 [click] Primeiro comentário: DateTime.Now. Aqui a gente usa TimeProvider. Para os estagiários: TimeProvider deixa o teste controlar o relógio.
 [click] Segundo: validação lança exceção. Aqui a gente devolve ProblemDetails, o formato padrão de erro em HTTP.
-[click] Terceiro: o teste se chama Test1. O nome não diz o que ele testa.
+[click] Terceiro: agora o teste que veio no PR. Ele se chama Test1. O nome não diz o que ele testa.
 -->
 
 ---
