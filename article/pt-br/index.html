@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Onboarding the Agent: AI in your repo, treated like a teammate · Rodrigo Nascimento</title>
-  <meta name="description" content="TODO: resumo da palestra em uma frase.">
+  <title>Integrando o agente: IA no seu repositório, tratada como colega de time · Rodrigo Nascimento</title>
+  <meta name="description" content="Um agente de IA começa toda sessão como alguém recém-contratado. Como integrá-lo com instruções, skills e agentes personalizados no repositório, sem deixar de revisar o trabalho dele.">
   <link rel="alternate" hreflang="en" href="../en/">
   <link rel="alternate" hreflang="pt-BR" href="../pt-br/">
 
@@ -26,17 +26,147 @@
 
 <main>
   <header class="hero">
-    <h1>Onboarding the Agent: AI in your repo, treated like a teammate</h1>
-    <p class="lead">TODO: a mensagem principal em uma frase.</p>
+    <h1>Integrando o agente: IA no seu repositório, tratada como colega de time</h1>
+    <p class="lead">O agente chega como pessoa nova no time em toda sessão: escreva a integração dele no repositório e revise o trabalho dele como o de qualquer outra pessoa.</p>
     <div class="meta">
       <a class="btn" href="../slides/">▶ Slides</a>
       <a class="btn ghost" href="https://github.com/RodrigoFNascimento/onboarding-the-agent">Código</a>
-      <span>· nov. de 2026 · X min de leitura</span>
+      <span>· nov. de 2026 · 8 min de leitura</span>
     </div>
   </header>
 
   <!-- content:start -->
-  <p>TODO: o artigo. Veja .claude/skills/talk/phases/5-article.md.</p>
+  <h2>O primeiro pull request</h2>
+  <p>Um pull request adiciona um endpoint para cancelar um pedido. Compila. Os testes passam. Mesmo assim, volta do review com três comentários.</p>
+<!-- snippet: 01-first-pr/src/FirstPr/CancelOrderEndpoint.cs#Cancel -->
+  <ul>
+    <li><strong><code>DateTime.Now</code>?</strong> Aqui usamos <code>TimeProvider</code>, para que os testes controlem o relógio.</li>
+    <li><strong>A validação lança uma exceção.</strong> Aqui, entrada inválida retorna <code>ProblemDetails</code>, o formato padrão para erros HTTP.</li>
+    <li><strong>O teste se chama <code>Test1</code>.</strong> O nome não diz o que ele verifica.</li>
+  </ul>
+  <p>Nada nesse código está errado em C#. Está errado <em>aqui</em>, neste repositório, segundo convenções que ninguém escreveu. Todo desenvolvedor já foi essa pessoa um dia: a pessoa nova no time, abrindo o primeiro pull request.</p>
+  <p>Só que quem abriu esse pull request foi um agente de IA. E isso muda tudo: a pessoa nova aprende depois do segundo pull request. O agente começa do zero <strong>em toda sessão</strong>.</p>
+
+  <h2>Um agente é um contribuidor que trabalha em loop</h2>
+  <p>O autocomplete sugere a próxima linha. O chat responde perguntas, e você copia e cola. Um <strong>agente</strong> é um modelo que age sobre o repositório: lê o código, roda comandos, edita arquivos, roda o build e os testes, e tenta de novo quando algo falha.</p>
+  <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    L[Lê o código] --> E[Edita] --> T[Build e testes]
+    T -- falhou --> E
+    T -- passou --> PR[Pull request]
+</pre>
+    <figcaption>O loop que diferencia um agente do autocomplete e do chat.</figcaption>
+  </figure>
+  <p>Esse loop faz do agente um <strong>contribuidor</strong>: qualquer um que altera o projeto. Ele usa a mesma branch, o mesmo pull request, as mesmas verificações e o mesmo review que todo mundo. O agente escreve o código, mas uma pessoa pediu a mudança, uma pessoa revisa e uma pessoa responde por ela em produção.</p>
+  <p>A solução óbvia para o primeiro pull request é escrever um prompt melhor toda vez. É como explicar tudo de boca para a pessoa nova toda manhã: funciona hoje, some amanhã, e cada um explica de um jeito. Não é assim que integramos pessoas: colocamos tudo por escrito.</p>
+
+  <h2>Instruções: o documento de integração</h2>
+  <p><strong>Instruções</strong> são um arquivo que o agente carrega no começo de toda sessão: o que é sempre verdade neste repositório. No GitHub Copilot, o arquivo é <code>.github/copilot-instructions.md</code>; outras ferramentas dão outros nomes para a mesma ideia.</p>
+  <p>Um arquivo útil tem cinco partes, nesta ordem: o que é o repositório, em uma linha; como fazer o build e rodar os testes, com os comandos exatos; as convenções; o que não fazer; e links para a documentação que importa. Estas são as convenções do repositório de exemplo: os dois primeiros comentários do review, agora por escrito, cada um com o seu motivo.</p>
+<!-- snippet: 02-orders-api/.github/copilot-instructions.md#conventions markdown -->
+  <p>O que fica de fora importa tanto quanto. Se uma pessoa não leria no primeiro dia, o agente também não deveria ler. Deixe de fora o que o linter e o formatador já garantem, textos longos, segredos e tudo o que muda toda semana.</p>
+
+  <h3>Instruções com escopo</h3>
+  <p>Algumas regras só valem para alguns arquivos. As <strong>instruções com escopo</strong> ficam em <code>.github/instructions/</code>, e o campo <code>applyTo</code> delas é um glob (um padrão de caminho) que diz a quais arquivos elas se aplicam. As regras de teste só importam nos testes, então o terceiro comentário do review mora aqui:</p>
+<!-- snippet: 02-orders-api/.github/instructions/tests.instructions.md markdown -->
+
+  <h3>Instruções orientam, não garantem</h3>
+  <p>Repita o mesmo pedido, agora com os dois arquivos no repositório. O agente lê as instruções, usa <code>TimeProvider</code> e retorna <code>ProblemDetails</code>. Mas o pull request chega sem teste.</p>
+  <p>A regra "todo endpoint tem teste" está no arquivo com escopo, e esse arquivo só é carregado quando o agente mexe em <code>tests/</code>. O agente nunca abriu um arquivo de teste, então nunca viu a regra. Instruções com escopo valem para os arquivos que estão sendo editados. Elas não dizem ao agente quais arquivos criar.</p>
+  <p>Escrever tudo isso dá mais trabalho do que corrigir o pull request? Uma vez, sim; depois, toda sessão e toda pessoa nova reaproveitam. E sim, às vezes o agente ignora as instruções. Instruções orientam. Quem garante são os formatadores, os analisadores e os testes que rodam no pull request, e o review humano pega o resto.</p>
+
+  <h2>Skills: o passo a passo, carregado quando precisa</h2>
+  <p>Instruções dizem o que é verdade. "Adicionar um endpoint" é outra coisa: é um procedimento. Uma <strong>skill</strong> é um procedimento que o agente só carrega quando a tarefa pede. É uma pasta com um arquivo <code>SKILL.md</code>: um cabeçalho curto e, depois, os passos, na ordem em que uma pessoa do time os seguiria.</p>
+<!-- snippet: 02-orders-api/.github/skills/add-endpoint/SKILL.md#add-an-endpoint markdown -->
+  <p>O passo 5 é o teste que faltava. Agora ele faz parte do trabalho, em vez de ser uma regra num arquivo que o agente nunca abriu.</p>
+
+  <h3>A descrição decide se a skill é usada</h3>
+  <p>No começo da sessão, o agente só lê o nome e a descrição de cada skill. Isso custa pouco. O corpo só é carregado quando um pedido combina com a descrição.</p>
+<!-- snippet: 02-orders-api/.github/skills/add-endpoint/SKILL.md#frontmatter markdown -->
+  <p>Por isso, escreva a descrição como um termo de busca. "Coisas de endpoint" nunca combina com nada. "Use when adding or changing an HTTP endpoint…" usa as mesmas palavras que o pedido vai usar. O <code>SKILL.md</code> também é um padrão aberto, então o mesmo arquivo funciona em outras ferramentas.</p>
+  <p>Com a skill no lugar, o mesmo pedido carrega a <code>add-endpoint</code>, segue os passos, e o pull request chega com o teste.</p>
+
+  <h2>Agentes personalizados: outro trabalho</h2>
+  <p>Instruções e skills mudam <em>como</em> o agente trabalha. Às vezes você quer outro trabalho, como revisar em vez de escrever. Um <strong>agente personalizado</strong> é um papel: tem as próprias instruções, muitas vezes um conjunto menor de ferramentas, e é escolhido para um tipo de trabalho. Este revisor confere uma mudança contra as convenções antes de o pull request ser aberto, e só consegue ler:</p>
+<!-- snippet: 02-orders-api/.github/agents/reviewer.agent.md#frontmatter markdown -->
+  <p>Abaixo do cabeçalho, o corpo lista o que verificar, como um checklist de review. Sem ferramentas de edição, ele não consegue "consertar" nada sozinho; a mudança continua sendo de quem a fez.</p>
+
+  <h3>Em qual arquivo fica cada regra?</h3>
+  <table>
+    <thead><tr><th>Se a regra é…</th><th>ela vai em</th></tr></thead>
+    <tbody>
+      <tr><td>sempre verdade neste repositório</td><td>instruções</td></tr>
+      <tr><td>verdade só para alguns arquivos</td><td>instruções com escopo</td></tr>
+      <tr><td>um procedimento para um tipo de tarefa</td><td>uma skill</td></tr>
+      <tr><td>um trabalho diferente</td><td>um agente personalizado</td></tr>
+    </tbody>
+  </table>
+  <p>Teste você mesmo: "os testes seguem <code>Method_Scenario_Expected</code>" é uma instrução com escopo. "Como adicionar o teste de integração de um endpoint" é uma skill: o nome segue uma regra, mas os passos são um procedimento. "Revise meu pull request antes de eu abrir" é um agente personalizado.</p>
+
+  <h2>Arquivo que o agente não acha não existe</h2>
+  <p>Cada arquivo é carregado em um momento diferente:</p>
+  <ul>
+    <li><strong>A sessão começa:</strong> as instruções do repositório inteiro são carregadas.</li>
+    <li><strong>O agente mexe em um arquivo:</strong> entram as instruções com escopo cujo <code>applyTo</code> combina.</li>
+    <li><strong>Chega um pedido:</strong> as descrições das skills são comparadas, e a que combina é carregada.</li>
+    <li><strong>Você escolhe um agente personalizado.</strong> No VS Code e no GitHub, o Copilot também pode passar parte de uma tarefa para um deles por conta própria, como <em>subagente</em> (um agente auxiliar iniciado para uma subtarefa), a menos que o arquivo defina <code>disable-model-invocation: true</code>. A documentação do Visual Studio só descreve a escolha feita por você.</li>
+  </ul>
+  <p>Tudo isso depende de os arquivos estarem exatamente onde a ferramenta procura. No repositório de exemplo, isso é <code>.github/</code>: <code>copilot-instructions.md</code>, <code>instructions/</code>, <code>skills/</code> e <code>agents/</code>. Um arquivo na pasta errada não dá erro. Ele é ignorado em silêncio.</p>
+
+  <h3>O AGENTS.md compensa com mais de uma ferramenta</h3>
+  <p>O <a href="https://agents.md/">AGENTS.md</a> é um formato aberto, "um README para agentes", lido por várias ferramentas. Em pastas aninhadas, vale o arquivo mais próximo. O repositório de exemplo tem uma versão das suas instruções nesse formato.</p>
+  <p>Ele compensa quando mais de uma ferramenta trabalha no repositório. Com uma ferramenta só, o arquivo dela basta, e migrar depois é uma mudança pequena, que o próprio agente consegue fazer. Seja qual for a escolha, mantenha uma única fonte de verdade: nunca as mesmas regras em dois arquivos.</p>
+  <p>Para ajudar o agente a achar as coisas: coloque cada arquivo exatamente onde a ferramenta procura, escreva as descrições como termos de busca, coloque links para a documentação em vez de copiá-la e mantenha curto o arquivo que sempre é carregado. Tudo nele custa contexto, o quanto o agente consegue ter em mente de uma vez, em todo pedido.</p>
+
+  <h2>Em cada repositório, ou em um compartilhado?</h2>
+  <p>O que é sobre <em>este código</em> fica junto do código. O que vale para <em>todo</em> repositório, como um papel de revisor ou o jeito como o time escreve pull requests, é candidato a ser compartilhado. Há dois jeitos de compartilhar, e cada um tem seu custo.</p>
+  <div class="cols">
+    <div class="card">
+      <h3>Um repositório compartilhado, configurado como arquivos de usuário</h3>
+      <ul>
+        <li>✓ Um lugar só para melhorar</li>
+        <li>✓ Sem cópias divergindo</li>
+        <li>✘ Só funciona nas máquinas onde foi configurado</li>
+        <li>✘ Versionado longe do código</li>
+        <li>✘ Agentes na nuvem e o review de código no GitHub não o enxergam</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Arquivos em cada repositório</h3>
+      <ul>
+        <li>✓ Revisados no mesmo pull request que o código</li>
+        <li>✓ Funcionam para qualquer um que clona</li>
+        <li>✓ Valem na nuvem também</li>
+        <li>✘ Arquivos comuns são copiados e divergem</li>
+      </ul>
+    </div>
+  </div>
+  <p>Um meio-termo: compartilhe papéis e skills genéricos, mantenha no repositório tudo o que cita o código dele, e faça as instruções de cada repositório dizerem quais arquivos compartilhados existem.</p>
+
+  <h2>O primeiro pull request, de novo</h2>
+  <p>De volta ao endpoint do começo. As instruções trazem o <code>TimeProvider</code> e o <code>ProblemDetails</code>. A skill traz os testes, com o nome certo. O revisor confere as convenções antes de o pull request ser aberto. Aí o review humano passa a ser sobre a mudança em si, não sobre as nossas convenções. Quase sempre: instruções orientam, e as verificações e o review continuam pegando o resto.</p>
+  <p>O que você daria para uma pessoa nova no primeiro dia é o que você dá ao agente:</p>
+  <ol>
+    <li>Um arquivo de instruções curto: build, testes, convenções, o que não fazer.</li>
+    <li>Uma skill para a tarefa que você mais repete.</li>
+    <li>Instruções com escopo só onde uma regra realmente muda.</li>
+    <li>Toda mudança feita por ele passa por um pull request e por um review humano.</li>
+  </ol>
+  <p>Não escreva tudo de uma vez. Comece pelos comandos de build e de teste. Quando o mesmo comentário aparecer duas vezes no review, ele vira uma linha. Uma regra de que ninguém precisou ainda é só mais contexto para carregar.</p>
+
+  <blockquote class="takeaway">O agente chega como pessoa nova no time em toda sessão. Escreva a integração dele no repositório e revise o trabalho dele como o de qualquer outra pessoa.</blockquote>
+
+  <h2>Referências</h2>
+  <ul>
+    <li>GitHub, <a href="https://docs.github.com/en/copilot/reference/customization-cheat-sheet">Copilot customization cheat sheet</a>: instruções, instruções com escopo, skills e agentes personalizados (em inglês)</li>
+    <li>GitHub, <a href="https://docs.github.com/en/copilot/reference/custom-agents-configuration">Custom agents configuration</a> (em inglês)</li>
+    <li>VS Code, <a href="https://code.visualstudio.com/docs/copilot/agents/subagents">Subagents</a> (em inglês)</li>
+    <li>Microsoft Learn, <a href="https://learn.microsoft.com/pt-br/visualstudio/ide/copilot-specialized-agents">Agentes personalizados no Visual Studio</a></li>
+    <li><a href="https://agentskills.io/specification">Especificação do Agent Skills</a> (em inglês)</li>
+    <li><a href="https://agents.md/">AGENTS.md</a> (em inglês)</li>
+    <li><a href="https://rodrigofnascimento.github.io/written-for-strangers/pt-br/">Escrito para estranhos</a>: por que todo contribuidor, pessoa ou agente, precisa de contexto por escrito</li>
+  </ul>
   <!-- content:end -->
 </main>
 
