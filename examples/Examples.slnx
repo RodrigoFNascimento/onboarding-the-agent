@@ -1,2 +1,16 @@
 <Solution>
+  <Folder Name="/01-first-pr/" />
+  <Folder Name="/01-first-pr/src/">
+    <Project Path="01-first-pr/src/FirstPr/FirstPr.csproj" />
+  </Folder>
+  <Folder Name="/01-first-pr/tests/">
+    <Project Path="01-first-pr/tests/FirstPr.Tests/FirstPr.Tests.csproj" />
+  </Folder>
+  <Folder Name="/02-orders-api/" />
+  <Folder Name="/02-orders-api/src/">
+    <Project Path="02-orders-api/src/OrdersApi/OrdersApi.csproj" />
+  </Folder>
+  <Folder Name="/02-orders-api/tests/">
+    <Project Path="02-orders-api/tests/OrdersApi.Tests/OrdersApi.Tests.csproj" />
+  </Folder>
 </Solution>
