@@ -7,7 +7,6 @@ namespace FirstPr.Tests;
 // and it can't check CancelledAt because the endpoint reads the real clock.
 public class UnitTest1
 {
-    #region first-pr-test
     [Fact]
     public void Test1()
     {
@@ -21,5 +20,4 @@ public class UnitTest1
         var cancelled = Assert.IsType<Ok<Order>>(result.Result).Value!;
         Assert.Equal(OrderStatus.Cancelled, cancelled.Status);
     }
-    #endregion
 }

@@ -48,7 +48,6 @@ public class OrderEndpointsTests
         Assert.IsType<NotFound>(result.Result);
     }
 
-    #region cancel-test
     [Fact]
     public void Cancel_PlacedOrder_RecordsTimeFromTimeProvider()
     {
@@ -61,7 +60,6 @@ public class OrderEndpointsTests
         Assert.Equal(OrderStatus.Cancelled, cancelled.Status);
         Assert.Equal(Now, cancelled.CancelledAt);
     }
-    #endregion
 
     [Theory]
     [InlineData(null)]

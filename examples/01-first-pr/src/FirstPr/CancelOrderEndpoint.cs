@@ -9,7 +9,6 @@ namespace FirstPr;
 // It compiles and its test passes. It breaks three conventions nobody had written down.
 public static class CancelOrderEndpoint
 {
-    #region first-pr
     public static Results<Ok<Order>, NotFound> Cancel(
         Guid id, CancelOrderRequest request, IOrderStore store)
     {
@@ -22,5 +21,4 @@ public static class CancelOrderEndpoint
         store.Save(cancelled);
         return TypedResults.Ok(cancelled);
     }
-    #endregion
 }

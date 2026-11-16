@@ -35,7 +35,6 @@ public static class OrderEndpoints
     public static Results<Ok<Order>, NotFound> Get(Guid id, IOrderStore store) =>
         store.Find(id) is { } order ? TypedResults.Ok(order) : TypedResults.NotFound();
 
-    #region cancel-endpoint
     public static Results<Ok<Order>, NotFound, ValidationProblem, ProblemHttpResult> Cancel(
         Guid id, CancelOrderRequest request, IOrderStore store, TimeProvider time)
     {
@@ -50,7 +49,6 @@ public static class OrderEndpoints
         store.Save(cancelled);
         return TypedResults.Ok(cancelled);
     }
-    #endregion
 
     private static Dictionary<string, string[]> Error(string field, string message) =>
         new() { [field] = [message] };

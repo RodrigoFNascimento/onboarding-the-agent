@@ -1,55 +1,26 @@
 // Builds the article into an output folder (default: dist-preview/).
 //   node build.mjs [--out <dir>]
 // - copies en/, pt-br/ and assets/
-// - replaces <!-- snippet: <path under examples/>#<region> [lang] --> with that code region
+// - replaces <!-- snippet: <path under examples/>[#<name>] [lang] --> with that code
+//   (found by name, see ../scripts/snippet.mjs)
 // - writes a root index.html that redirects to the reader's language
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync } from 'node:fs';
 import { dirname, join, resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extract } from '../scripts/snippet.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const examplesDir = resolve(here, '..', 'examples');
 const outArg = process.argv.indexOf('--out');
 const out = resolve(here, outArg > -1 ? process.argv[outArg + 1] : 'dist-preview');
 
-const LANG_BY_EXT = { '.cs': 'csharp', '.fs': 'fsharp', '.json': 'json', '.xml': 'xml', '.csproj': 'xml', '.sql': 'sql', '.js': 'javascript', '.ts': 'typescript', '.yml': 'yaml', '.yaml': 'yaml', '.sh': 'bash' };
-
-// Region markers: C# `#region name`, `// #region name`, `<!-- #region name -->`.
-const START = [/^\s*#region\s+(.+?)\s*$/, /^\s*\/\/\s*#?region\s+(.+?)\s*$/, /^\s*<!--\s*#?region\s+(.+?)\s*-->/];
-const END = [/^\s*#endregion\b/, /^\s*\/\/\s*#?endregion\b/, /^\s*<!--\s*#?endregion\b/];
-const isStart = l => START.map(r => r.exec(l)?.[1]).find(Boolean);
-const isEnd = l => END.some(r => r.test(l));
-
-function dedent(lines) {
-  const indents = lines.filter(l => l.trim()).map(l => l.match(/^\s*/)[0].length);
-  const min = indents.length ? Math.min(...indents) : 0;
-  return lines.map(l => l.slice(min)).join('\n');
-}
-
-function extract(file, region) {
-  const full = join(examplesDir, file);
-  if (!existsSync(full)) throw new Error(`snippet file not found: examples/${file}`);
-  const lines = readFileSync(full, 'utf8').replace(/\r\n/g, '\n').split('\n');
-  if (!region) return dedent(lines.filter(l => !isStart(l) && !isEnd(l))).trimEnd();
-  let depth = 0, start = -1;
-  for (let i = 0; i < lines.length; i++) {
-    const name = isStart(lines[i]);
-    if (start === -1) { if (name === region) { start = i + 1; depth = 1; } continue; }
-    if (name) depth++;
-    else if (isEnd(lines[i]) && --depth === 0) {
-      const body = lines.slice(start, i).filter(l => !isStart(l) && !isEnd(l));
-      return dedent(body).replace(/^\n+|\s+$/g, '');
-    }
-  }
-  throw new Error(`region "${region}" not found in examples/${file}`);
-}
+const LANG_BY_EXT = { '.cs': 'csharp', '.fs': 'fsharp', '.json': 'json', '.xml': 'xml', '.csproj': 'xml', '.sql': 'sql', '.js': 'javascript', '.ts': 'typescript', '.yml': 'yaml', '.yaml': 'yaml', '.sh': 'bash', '.md': 'markdown' };
 
 const escape = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function renderSnippets(html, page) {
-  return html.replace(/^([ \t]*)<!--\s*snippet:\s*([^#\s]+)(?:#(\S+))?(?:\s+(\w+))?\s*-->/gm, (_, indent, file, region, lang) => {
+  return html.replace(/^([ \t]*)<!--\s*snippet:\s*([^#\s]+)(?:#(\S+))?(?:\s+(\w+))?\s*-->/gm, (_, indent, file, selector, lang) => {
     try {
-      const code = extract(file, region);
+      const code = extract(file, selector);
       const language = lang || LANG_BY_EXT[extname(file)] || 'plaintext';
       const src = `https://github.com/RodrigoFNascimento/${slug()}/blob/main/examples/${file}`;
       return `${indent}<pre class="code"><code class="language-${language}">${escape(code)}</code></pre>\n` +
