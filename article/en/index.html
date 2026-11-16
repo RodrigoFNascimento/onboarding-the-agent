@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Onboarding the Agent: AI in your repo, treated like a teammate · Rodrigo Nascimento</title>
-  <meta name="description" content="TODO: one-sentence summary of the talk.">
+  <meta name="description" content="An AI agent starts every session as a new hire. How to onboard it with instructions, skills and custom agents in the repository, and keep reviewing its work.">
   <link rel="alternate" hreflang="en" href="../en/">
   <link rel="alternate" hreflang="pt-BR" href="../pt-br/">
 
@@ -27,16 +27,146 @@
 <main>
   <header class="hero">
     <h1>Onboarding the Agent: AI in your repo, treated like a teammate</h1>
-    <p class="lead">TODO: the takeaway in one sentence.</p>
+    <p class="lead">The agent is the new hire in every session: write its onboarding down in the repository, and review its work like anyone else's.</p>
     <div class="meta">
       <a class="btn" href="../slides/">▶ Slides (pt-BR)</a>
       <a class="btn ghost" href="https://github.com/RodrigoFNascimento/onboarding-the-agent">Code</a>
-      <span>· Nov 2026 · X min read</span>
+      <span>· Nov 2026 · 8 min read</span>
     </div>
   </header>
 
   <!-- content:start -->
-  <p>TODO: the article. See .claude/skills/talk/phases/5-article.md.</p>
+  <h2>The first pull request</h2>
+  <p>A pull request adds an endpoint to cancel an order. It builds. The tests pass. It still comes back from review with three comments.</p>
+<!-- snippet: 01-first-pr/src/FirstPr/CancelOrderEndpoint.cs#Cancel -->
+  <ul>
+    <li><strong><code>DateTime.Now</code>?</strong> Here we use <code>TimeProvider</code>, so tests can control the clock.</li>
+    <li><strong>Validation throws an exception.</strong> Here invalid input returns <code>ProblemDetails</code>, the standard shape for HTTP errors.</li>
+    <li><strong>The test is called <code>Test1</code>.</strong> The name doesn't say what it checks.</li>
+  </ul>
+  <p>Nothing in that code is wrong in C#. It's wrong <em>here</em>, in this repository, by conventions nobody wrote down. Every developer has been that person once: the new hire on their first pull request.</p>
+  <p>This pull request was opened by an AI agent. The difference matters: a new hire learns after the second pull request. The agent starts from zero <strong>in every session</strong>.</p>
+
+  <h2>An agent is a contributor that works in a loop</h2>
+  <p>Autocomplete suggests the next line. Chat answers questions, and you copy and paste. An <strong>agent</strong> is a model that acts on the repository: it reads the code, runs commands, edits files, runs the build and the tests, and tries again when they fail.</p>
+  <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    L[Read the code] --> E[Edit] --> T[Build and test]
+    T -- failed --> E
+    T -- passed --> PR[Pull request]
+</pre>
+    <figcaption>The loop that makes an agent different from autocomplete and chat.</figcaption>
+  </figure>
+  <p>That loop makes the agent a <strong>contributor</strong>: anyone who changes the project. It uses the same branch, the same pull request, the same checks and the same review as everyone else. The agent writes the code, but a person asked for it, a person reviews it, and a person answers for it in production.</p>
+  <p>The obvious fix for the first pull request is a better prompt every time. That's briefing the new hire out loud every morning: it works today, it's gone tomorrow, and each of us briefs differently. We don't onboard people that way. We write it down.</p>
+
+  <h2>Instructions: the onboarding doc</h2>
+  <p><strong>Instructions</strong> are a file the agent loads at the start of every session: what's always true in this repository. In GitHub Copilot, the file is <code>.github/copilot-instructions.md</code>; other tools have their own names for the same idea.</p>
+  <p>A useful one has five parts, in this order: what the repository is, in one line; how to build and test, with the exact commands; the conventions; what not to do; and links to the docs that matter. Here are the sample repository's conventions, the first two review comments written down, each with its reason:</p>
+<!-- snippet: 02-orders-api/.github/copilot-instructions.md#conventions markdown -->
+  <p>What stays out matters as much. If a person wouldn't read it on day one, the agent shouldn't either. Leave out what the linter and formatter already enforce, long essays, secrets, and anything that changes every week.</p>
+
+  <h3>Scoped instructions</h3>
+  <p>Some rules only apply to some files. <strong>Scoped instructions</strong> live in <code>.github/instructions/</code>, and their <code>applyTo</code> field is a glob (a path pattern) that says which files they cover. The test rules only matter in tests, so the third review comment lives here:</p>
+<!-- snippet: 02-orders-api/.github/instructions/tests.instructions.md markdown -->
+
+  <h3>Instructions guide; they don't enforce</h3>
+  <p>Run the same request again, now with both files in the repository. The agent reads the instructions, uses <code>TimeProvider</code> and returns <code>ProblemDetails</code>. But the pull request arrives without a test.</p>
+  <p>The rule "every endpoint has a test" lives in the scoped file, and that file only loads when the agent touches <code>tests/</code>. The agent never opened a test file, so it never saw the rule. Scoped instructions apply to the files being edited. They don't tell the agent which files to create.</p>
+  <p>Is writing this more work than fixing the pull request? Once, yes; then every session and every new hire reuses it. And yes, the agent sometimes ignores instructions. Instructions guide. Formatters, analyzers and tests on the pull request enforce, and the human review catches the rest.</p>
+
+  <h2>Skills: the how-tos, loaded when needed</h2>
+  <p>Instructions say what's true. "Add an endpoint" is something else: a procedure. A <strong>skill</strong> is a procedure the agent loads only when the task needs it. It's a folder with a <code>SKILL.md</code> file: a short header, then the steps, in the order a teammate would follow them.</p>
+<!-- snippet: 02-orders-api/.github/skills/add-endpoint/SKILL.md#add-an-endpoint markdown -->
+  <p>Step 5 is the missing test, now part of the job instead of a rule in a file the agent never opened.</p>
+
+  <h3>The description decides whether a skill is used</h3>
+  <p>At the start of a session, the agent only reads each skill's name and description. That's cheap. The body loads when a request matches the description.</p>
+<!-- snippet: 02-orders-api/.github/skills/add-endpoint/SKILL.md#frontmatter markdown -->
+  <p>So write the description like a search term. "Endpoint stuff" never matches anything. "Use when adding or changing an HTTP endpoint…" uses the words the request will use. <code>SKILL.md</code> is also an open standard, so the same file works in other tools.</p>
+  <p>With the skill in place, the same request loads <code>add-endpoint</code>, follows the steps, and the pull request comes with its test.</p>
+
+  <h2>Custom agents: a different job</h2>
+  <p>Instructions and skills shape <em>how</em> the agent works. Sometimes you want a different job altogether, like reviewing instead of writing. A <strong>custom agent</strong> is a role: its own instructions, often a narrower set of tools, picked for one kind of work. This reviewer checks a change against the conventions before the pull request is opened, and it can only read:</p>
+<!-- snippet: 02-orders-api/.github/agents/reviewer.agent.md#frontmatter markdown -->
+  <p>Below the header, the body lists what to check, like a review checklist. Without edit tools, it can't "fix" anything itself; the author owns the change.</p>
+
+  <h3>Which file does a rule go in?</h3>
+  <table>
+    <thead><tr><th>If the rule is…</th><th>it goes in</th></tr></thead>
+    <tbody>
+      <tr><td>always true in this repository</td><td>instructions</td></tr>
+      <tr><td>true only for some files</td><td>scoped instructions</td></tr>
+      <tr><td>a procedure for one kind of task</td><td>a skill</td></tr>
+      <tr><td>a different job</td><td>a custom agent</td></tr>
+    </tbody>
+  </table>
+  <p>Try it: "tests follow <code>Method_Scenario_Expected</code>" is a scoped instruction. "How to add an endpoint's integration test" is a skill: the naming is a rule, but the steps are a procedure. "Review my pull request before I open it" is a custom agent.</p>
+
+  <h2>A file the agent can't find doesn't exist</h2>
+  <p>Each file loads at a different moment:</p>
+  <ul>
+    <li><strong>The session starts:</strong> the repository-wide instructions load.</li>
+    <li><strong>The agent touches a file:</strong> scoped instructions whose <code>applyTo</code> matches are added.</li>
+    <li><strong>A request comes in:</strong> skill descriptions are compared, and a match loads the skill.</li>
+    <li><strong>You pick a custom agent.</strong> In VS Code and on GitHub, Copilot can also hand part of a task to one on its own, as a <em>subagent</em> (a helper agent started for a sub-task), unless the file sets <code>disable-model-invocation: true</code>. Visual Studio's docs only describe picking it yourself.</li>
+  </ul>
+  <p>All of it depends on the files being exactly where the tool looks. In the sample repository, that's <code>.github/</code>: <code>copilot-instructions.md</code>, <code>instructions/</code>, <code>skills/</code> and <code>agents/</code>. A file in the wrong folder doesn't cause an error. It's silently ignored.</p>
+
+  <h3>AGENTS.md pays off with more than one tool</h3>
+  <p><a href="https://agents.md/">AGENTS.md</a> is an open format, "a README for agents", read by many tools. In nested folders, the nearest file wins. The sample repository has a version of its instructions in this format.</p>
+  <p>It pays off when more than one tool works in the repository. With a single tool, its own file is enough, and moving later is a small change the agent itself can make. Either way, keep one source of truth: never the same rules in two files.</p>
+  <p>To help the agent find things: put each file exactly where the tool looks, write descriptions like search terms, link to docs instead of copying them, and keep the always-loaded file short. Everything in it costs context, what the agent can hold in mind at once, on every request.</p>
+
+  <h2>Every repository, or one shared one?</h2>
+  <p>Facts about <em>this code</em> live with the code. Things true for <em>every</em> repository, like a reviewer role or how the team writes pull requests, are candidates for sharing. There are two ways to share them, and each has a cost.</p>
+  <div class="cols">
+    <div class="card">
+      <h3>A shared repository, set up as user-level files</h3>
+      <ul>
+        <li>✓ One place to improve</li>
+        <li>✓ No copies drifting apart</li>
+        <li>✘ Works only on machines where it's set up</li>
+        <li>✘ Versioned apart from the code</li>
+        <li>✘ Cloud agents and code review on GitHub don't see it</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Files in each repository</h3>
+      <ul>
+        <li>✓ Reviewed in the same pull request as the code</li>
+        <li>✓ Work for anyone who clones</li>
+        <li>✓ Work in the cloud too</li>
+        <li>✘ Shared files get copied and drift</li>
+      </ul>
+    </div>
+  </div>
+  <p>A middle ground: share generic roles and skills, keep anything that names this repository's code in the repository, and have each repository's instructions say which shared files exist.</p>
+
+  <h2>The first pull request, again</h2>
+  <p>Back to the endpoint from the start. The instructions bring <code>TimeProvider</code> and <code>ProblemDetails</code>. The skill brings the tests, named the right way. The reviewer checks the conventions before the pull request is opened. The human review is then about the change itself, not about our conventions. Almost always: instructions guide, and the checks and the review still catch the rest.</p>
+  <p>What you'd give a new hire on day one is what you give the agent:</p>
+  <ol>
+    <li>A short instructions file: build, test, conventions, don'ts.</li>
+    <li>One skill for the task you repeat most.</li>
+    <li>Scoped instructions only where a rule really differs.</li>
+    <li>Every change it makes goes through a pull request and a human review.</li>
+  </ol>
+  <p>Don't write it all upfront. Start with the build and test commands. When the same review comment shows up twice, it becomes a line. A rule nobody has needed yet is just more context to load.</p>
+
+  <blockquote class="takeaway">The agent is the new hire in every session. Write its onboarding down in the repository, and review its work like anyone else's.</blockquote>
+
+  <h2>References</h2>
+  <ul>
+    <li>GitHub, <a href="https://docs.github.com/en/copilot/reference/customization-cheat-sheet">Copilot customization cheat sheet</a>: instructions, scoped instructions, skills and custom agents</li>
+    <li>GitHub, <a href="https://docs.github.com/en/copilot/reference/custom-agents-configuration">Custom agents configuration</a></li>
+    <li>VS Code, <a href="https://code.visualstudio.com/docs/copilot/agents/subagents">Subagents</a></li>
+    <li>Microsoft Learn, <a href="https://learn.microsoft.com/en-us/visualstudio/ide/copilot-specialized-agents">Custom agents in Visual Studio</a></li>
+    <li><a href="https://agentskills.io/specification">Agent Skills specification</a></li>
+    <li><a href="https://agents.md/">AGENTS.md</a></li>
+    <li><a href="https://rodrigofnascimento.github.io/written-for-strangers/">Written for strangers</a>: why every contributor, human or agent, needs context written down</li>
+  </ul>
   <!-- content:end -->
 </main>
 

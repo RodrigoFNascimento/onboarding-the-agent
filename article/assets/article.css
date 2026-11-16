@@ -113,3 +113,9 @@ footer {
   border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9rem;
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
 }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+th, td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; }
+td:last-child { font-weight: 600; color: var(--accent); }
