@@ -39,7 +39,7 @@ Sem introdução sobre IA. Vai direto para o pull request.
 
 <p class="lead big">Adiciona endpoint para cancelar um pedido</p>
 
-<p class="mt-3">✔ Build &nbsp;&nbsp; ✔ Testes</p>
+<p class="mt-3">✓ Build &nbsp;&nbsp; ✓ Testes</p>
 
 </div>
 
@@ -330,7 +330,7 @@ Instruções com escopo: regras que só valem para alguns arquivos.
 <h3 v-click="1">Leu</h3>
 <p v-click="1" class="m-0"><code>.github/copilot-instructions.md</code></p>
 <h3 v-click="2">Fez</h3>
-<p v-click="2" class="m-0">✔ <code>TimeProvider</code> &nbsp; ✔ <code>ProblemDetails</code></p>
+<p v-click="2" class="m-0">✓ <code>TimeProvider</code> &nbsp; ✓ <code>ProblemDetails</code></p>
 <h3 v-click="3" class="accent">Pull request</h3>
 <p v-click="3" class="m-0 lead big">✘ sem teste</p>
 </div>
@@ -386,4 +386,499 @@ Responde ao cético antes que ele pergunte.
 "Dá mais trabalho que corrigir o PR?" Escreve uma vez, toda sessão e todo novato reaproveitam.
 [click] "Ele às vezes ignora as instruções." Sim: instruções orientam, não garantem. Quem garante são os checks no PR, e o review humano pega o resto.
 Transição: "Instruções dizem o que é verdade. Não dizem como fazer um trabalho passo a passo. 'Adicionar um endpoint' é um procedimento."
+-->
+
+---
+class: title-slide
+---
+
+<p class="eyebrow">Skills</p>
+
+# O passo a passo
+
+<p class="lead">Carregada só quando a tarefa pede: <em>como a gente faz X aqui</em>.</p>
+
+<p class="byline"><code>.github/skills/add-endpoint/SKILL.md</code></p>
+
+<!--
+Pergunta: onde eu coloco "como a gente faz X" sem inchar as instruções?
+Skill: um procedimento que o agente só carrega quando a tarefa precisa dele.
+É uma pasta com um arquivo SKILL.md dentro.
+-->
+
+---
+
+# Adicionar um endpoint, passo a passo
+
+<<< @/../examples/02-orders-api/.github/skills/add-endpoint/SKILL.md#add-an-endpoint md {all|3-5|6-7|9-10|12}
+
+<!--
+O corpo da skill: os passos, na ordem em que uma pessoa do time faria.
+[click] A rota, no lugar de sempre.
+[click] Validação devolvendo ProblemDetails, nunca exceção.
+[click] Os testes: o caso de sucesso e um por erro. É aqui que entra o teste que faltou.
+[click] E roda dotnet test antes de dizer que terminou.
+-->
+
+---
+
+# A descrição decide se a skill é usada
+
+<<< @/../examples/02-orders-api/.github/skills/add-endpoint/SKILL.md#frontmatter md {all|2|3-4}
+
+<p v-click="3" class="lead mt-6">No início da sessão, o agente só lê nome e descrição.<br>O resto carrega quando o pedido combina com a descrição.</p>
+
+<!--
+O cabeçalho da skill.
+[click] O nome, igual ao da pasta.
+[click] A descrição: diz quando usar a skill.
+[click] No começo da sessão, o agente só vê nome e descrição de cada skill. É barato. O corpo só carrega quando o pedido combina. Então a descrição decide se a skill vai ser usada um dia.
+-->
+
+---
+
+# Escreva a descrição como um termo de busca
+
+<div class="cols">
+<div class="card">
+
+### ✘ Vaga
+
+<p class="lead">"Endpoint stuff"</p>
+
+</div>
+<div v-click class="card card-accent">
+
+### ✓ Diz quando usar
+
+<p class="lead">"Use when adding or changing an HTTP endpoint in the Orders API: route, validation, error responses, tests and docs."</p>
+
+</div>
+</div>
+
+<p v-click class="lead mt-8">O formato <code>SKILL.md</code> é um padrão aberto: o mesmo arquivo serve em outras ferramentas.</p>
+
+<!--
+Uma descrição vaga: "Endpoint stuff". O agente não tem como saber quando usar.
+[click] Uma boa: começa com "Use when", e cita as palavras que vão aparecer no pedido.
+[click] E um bônus: SKILL.md é um padrão aberto, o mesmo formato em várias ferramentas. É o único lugar onde a portabilidade sai de graça.
+Se perguntarem de prompt files: fora do escopo de hoje.
+-->
+
+---
+
+# De novo, agora com uma skill
+
+<div class="grid grid-cols-[9rem_1fr] gap-x-6 gap-y-4 items-baseline">
+<h3>Pedido</h3>
+<p class="m-0">"Adicione um endpoint para cancelar um pedido"</p>
+<h3 v-click="1">Carregou</h3>
+<p v-click="1" class="m-0">a skill <code>add-endpoint</code>, pela descrição</p>
+<h3 v-click="2">Fez</h3>
+<p v-click="2" class="m-0">✓ <code>TimeProvider</code> &nbsp; ✓ <code>ProblemDetails</code> &nbsp; ✓ testes</p>
+<h3 v-click="3" class="accent">Pull request</h3>
+<p v-click="3" class="m-0 lead big">✓ com teste</p>
+</div>
+
+<!--
+O mesmo pedido, agora com a skill no repositório.
+[click] O pedido combina com a descrição, e o agente carrega a skill add-endpoint.
+[click] Segue os passos: TimeProvider, ProblemDetails, e os testes, porque o passo 5 manda.
+[click] O pull request vem com teste.
+Transição: "Instruções e skills mudam como o agente trabalha. Às vezes você quer que ele faça outro trabalho, como revisar em vez de escrever."
+-->
+
+---
+class: title-slide
+---
+
+<p class="eyebrow">Agentes personalizados</p>
+
+# Os papéis
+
+<p class="lead">Outro trabalho, com instruções e ferramentas próprias.</p>
+
+<p class="byline"><code>.github/agents/reviewer.agent.md</code></p>
+
+<!--
+Agente personalizado: um papel. Instruções próprias, às vezes menos ferramentas, e você escolhe ele para um tipo de trabalho.
+-->
+
+---
+
+# O revisor lê e comenta, mas nunca edita
+
+<<< @/../examples/02-orders-api/.github/agents/reviewer.agent.md#frontmatter md {all|3-4|5}
+
+<!--
+O exemplo: um revisor, que confere a mudança contra as nossas convenções antes do PR.
+[click] A descrição diz o trabalho dele.
+[click] E as ferramentas: só ler e buscar. Ele não tem como editar código: quem é dono da mudança é o autor.
+Abaixo do cabeçalho vem o corpo: o que conferir, como um checklist de review.
+-->
+
+---
+
+# Qual arquivo? Depende da regra
+
+<div class="grid grid-cols-[1fr_auto] gap-x-10 gap-y-4 items-baseline">
+<p class="m-0 lead">Se a regra é…</p>
+<p class="m-0 lead">vai em</p>
+<p v-click="1" class="m-0">sempre verdade neste repositório</p>
+<h3 v-click="1" class="m-0">instruções</h3>
+<p v-click="2" class="m-0">verdade só para alguns arquivos</p>
+<h3 v-click="2" class="m-0">instruções com escopo</h3>
+<p v-click="3" class="m-0">um procedimento para um tipo de tarefa</p>
+<h3 v-click="3" class="m-0">skill</h3>
+<p v-click="4" class="m-0">um trabalho diferente</p>
+<h3 v-click="4" class="m-0">agente personalizado</h3>
+</div>
+
+<!--
+Pergunta: tenho uma regra na cabeça. Em qual arquivo ela vai?
+[click] Sempre verdade neste repositório: instruções.
+[click] Só para alguns arquivos: instruções com escopo.
+[click] Um procedimento para um tipo de tarefa: skill.
+[click] Um trabalho diferente: agente personalizado.
+-->
+
+---
+
+# Onde mora cada regra?
+
+<div class="grid grid-cols-[1fr_auto] gap-x-10 gap-y-5 items-baseline">
+<p class="m-0 lead">Os testes seguem <code>Method_Scenario_Expected</code></p>
+<h3 v-click="1" class="m-0 accent">instruções com escopo</h3>
+<p class="m-0 lead">Como adicionar o teste de integração de um endpoint</p>
+<h3 v-click="2" class="m-0 accent">skill</h3>
+<p class="m-0 lead">Revise meu PR antes de eu abrir</p>
+<h3 v-click="3" class="m-0 accent">agente personalizado</h3>
+</div>
+
+<!--
+Pergunta rápida: responde no chat ou em voz alta. Menos de um minuto.
+Se ninguém responder, responde a primeira e segue.
+[click] Nome dos testes: instruções com escopo, só vale em tests/.
+[click] Adicionar um teste de integração: skill. Se alguém disser "instruções com escopo": o nome é uma regra, os passos são uma skill.
+[click] Revisar o PR: agente personalizado, é outro trabalho.
+Transição: "Agora a gente tem arquivos. Mas arquivo que o agente não acha é como se não existisse. Como ele acha?"
+-->
+
+---
+class: title-slide
+---
+
+<p class="eyebrow">Descoberta</p>
+
+# Como o agente acha os arquivos
+
+<p class="lead">Arquivo que o agente não acha é como se não existisse.</p>
+
+<!--
+Pergunta: como o agente sabe que esses arquivos existem?
+Entender isso é o que faz a gente colocar cada arquivo no lugar certo.
+-->
+
+---
+
+# Cada arquivo carrega em um momento
+
+<div class="grid grid-cols-[14rem_1fr] gap-x-6 gap-y-4 items-baseline">
+<p class="m-0 lead">Quando…</p>
+<p class="m-0 lead">o agente carrega</p>
+<h3 v-click="1" class="m-0">a sessão começa</h3>
+<p v-click="1" class="m-0"><code>copilot-instructions.md</code></p>
+<h3 v-click="2" class="m-0">mexe em um arquivo</h3>
+<p v-click="2" class="m-0">as instruções cujo <code>applyTo</code> combina</p>
+<h3 v-click="3" class="m-0">chega um pedido</h3>
+<p v-click="3" class="m-0">a skill cuja descrição combina</p>
+<h3 v-click="4" class="m-0">você escolhe</h3>
+<p v-click="4" class="m-0">o agente personalizado<br>ou o Copilot delega a ele, como subagente</p>
+</div>
+
+<!--
+Uma linha por momento, na ordem em que acontecem.
+[click] A sessão começa: as instruções do repositório inteiro carregam.
+[click] O agente mexe em um arquivo: entram as instruções com escopo cujo applyTo combina.
+[click] Chega um pedido: as descrições das skills são comparadas, e a que combina carrega.
+[click] Agentes personalizados: normalmente você escolhe. No VS Code e no GitHub, o Copilot também pode passar parte da tarefa para um deles sozinho, como subagente. Para os estagiários: subagente é um agente auxiliar que o agente principal chama para uma subtarefa. Dá para desligar com disable-model-invocation: true. A documentação do Visual Studio só fala de escolher manualmente.
+-->
+
+---
+
+# A pasta errada não dá erro
+
+<div class="cols items-start">
+<div>
+
+```text
+orders-api/
+├─ .github/
+│  ├─ copilot-instructions.md
+│  ├─ instructions/
+│  │  └─ tests.instructions.md
+│  ├─ skills/
+│  │  └─ add-endpoint/SKILL.md
+│  └─ agents/
+│     └─ reviewer.agent.md
+├─ src/
+└─ tests/
+```
+
+</div>
+<div v-click>
+
+<p class="lead">Padrões abertos, na raiz:</p>
+
+- `AGENTS.md`
+- `.agents/skills/`
+
+<p class="lead mt-4">A mesma ideia em outras ferramentas:</p>
+
+- `.claude/`
+
+</div>
+</div>
+
+<p v-click class="lead big mt-6">Arquivo fora do lugar é <em>ignorado em silêncio</em>.</p>
+
+<!--
+O mapa de pastas do repositório de exemplo. Tudo dentro de .github: instruções, instruções com escopo, skills, agentes.
+[click] Os padrões abertos ficam na raiz: AGENTS.md e .agents/skills. E outras ferramentas têm a mesma ideia em pastas próprias, como .claude.
+[click] E o mais importante: pasta errada não dá erro nenhum. O arquivo só é ignorado. Pasta errada, nenhum erro. Fala duas vezes.
+-->
+
+---
+
+<h1>AGENTS.md compensa com mais de uma ferramenta</h1>
+
+<div class="cols">
+<div class="card">
+
+### `.github/copilot-instructions.md`
+
+Lido pelo Copilot.
+
+</div>
+<div class="card">
+
+### `AGENTS.md`
+
+Formato aberto, "um README para agentes", lido por várias ferramentas.<br>Arquivos aninhados: o mais próximo vence.
+
+</div>
+</div>
+
+<div class="mt-6">
+<v-clicks>
+
+- Uma ferramenta só? O arquivo dela basta. Mudar depois é pequeno.
+- De qualquer jeito: <em>uma fonte de verdade</em>, nunca as mesmas regras em dois arquivos.
+
+</v-clicks>
+</div>
+
+<!--
+O mesmo conteúdo pode morar em dois lugares.
+O arquivo do Copilot, que é o que a gente viu até agora.
+AGENTS.md: um formato aberto, "um README para agentes", lido por muitas ferramentas. Em subpastas, o arquivo mais próximo do código vence.
+[click] Compensa quando mais de uma ferramenta mexe no repositório. Com uma ferramenta só, o arquivo dela basta. Mudar depois é pequeno, e o próprio agente faz.
+[click] Seja qual for: uma fonte de verdade. Nunca as mesmas regras em dois arquivos.
+-->
+
+---
+
+# Fácil de achar, barato de carregar
+
+<v-clicks>
+
+- Cada arquivo **exatamente onde a ferramenta procura**
+- Descrições escritas como **termos de busca**
+- **Link** para a documentação, em vez de copiar
+- Arquivo principal **curto**: tudo nele custa contexto em todo pedido
+
+</v-clicks>
+
+<!--
+Como ajudar a descoberta.
+[click] O arquivo exatamente onde a ferramenta procura. Pasta errada, nenhum erro: segunda vez que eu falo.
+[click] Descrições como termos de busca: as palavras que vão aparecer no pedido.
+[click] Link em vez de cópia: "convenções da API: docs/api.md".
+[click] O arquivo principal curto: ele carrega em todo pedido. Para os estagiários: contexto é o que o agente consegue ter em mente de uma vez.
+Transição: "Isso cobre um repositório. Mas a gente tem vários, e muita coisa é igual em todos."
+-->
+
+---
+class: title-slide
+---
+
+# Copiar tudo para todo repositório?
+
+<p v-click class="lead big">Fatos sobre <em>este código</em> moram com o código.</p>
+
+<p v-click class="lead big">O que vale para <em>todo</em> repositório pode ser compartilhado.</p>
+
+<!--
+Pergunta: eu copio tudo isso para todo repositório?
+[click] O princípio: o que fala deste código mora com o código.
+[click] O que vale para todo repositório, como um papel de revisor ou como a gente escreve PR, é candidato a ser compartilhado.
+-->
+
+---
+
+# Dois jeitos, cada um com seu custo
+
+<div class="cols">
+<div v-click class="card">
+
+### Repositório compartilhado
+
+<p class="eyebrow">como arquivos de usuário</p>
+
+- ✓ Um lugar para melhorar
+- ✓ Sem cópias divergindo
+- ✘ Só funciona onde foi configurado
+- ✘ Versionado longe do código
+- ✘ Agentes na nuvem e review no GitHub não veem
+
+</div>
+<div v-click class="card">
+
+### Arquivos em cada repositório
+
+<p class="eyebrow">junto com o código</p>
+
+- ✓ Revisados no mesmo PR do código
+- ✓ Funcionam para quem clona
+- ✓ Valem na nuvem também
+- ✘ Arquivos comuns são copiados e divergem
+
+</div>
+</div>
+
+<!--
+Sem veredito. Os dois lados com o mesmo peso.
+[click] Repositório compartilhado, configurado como arquivos de usuário: um lugar só para melhorar, sem cópias divergindo, os mesmos agentes para todo mundo. Mas só funciona na máquina onde foi configurado, e cada pessoa nova tem que configurar. Fica versionado longe do código. E agentes na nuvem e o review do Copilot no GitHub não enxergam.
+[click] Arquivos em cada repositório: revisados no mesmo PR do código, funcionam para qualquer um que clona, nuvem incluída. Mas o que é comum acaba copiado, e as cópias divergem.
+-->
+
+---
+
+# O que cita este código fica neste repositório
+
+<v-clicks>
+
+- Papéis e skills genéricos: **compartilhados**
+- O que cita o código deste repositório: **no repositório**
+- As instruções de cada repositório **dizem quais arquivos compartilhados existem**
+
+</v-clicks>
+
+<!--
+Um meio-termo possível, não uma regra.
+[click] Papéis e skills genéricos, como o revisor: compartilhados.
+[click] Tudo que cita o código deste repositório fica nele.
+[click] E as instruções de cada repositório avisam quais arquivos compartilhados existem.
+Transição: "De volta ao novato do começo."
+-->
+
+---
+
+# O primeiro PR, de novo
+
+<div class="grid grid-cols-[9rem_1fr] gap-x-6 gap-y-4 items-baseline">
+<h3>Instruções</h3>
+<p class="m-0">✓ <code>TimeProvider</code> &nbsp; ✓ <code>ProblemDetails</code></p>
+<h3 v-click="1">Skill</h3>
+<p v-click="1" class="m-0">✓ testes, com o nome no padrão</p>
+<h3 v-click="2">Revisor</h3>
+<p v-click="2" class="m-0">✓ convenções conferidas antes do PR</p>
+<h3 v-click="3" class="accent">Review</h3>
+<p v-click="3" class="m-0 lead big">sobre a mudança, não sobre as convenções</p>
+</div>
+
+<!--
+O PR do começo, agora com tudo no lugar.
+As instruções: TimeProvider e ProblemDetails.
+[click] A skill: os testes, com o nome no padrão.
+[click] O revisor conferiu as convenções antes de abrir o PR.
+[click] E o review humano fica sobre a mudança em si, não sobre as nossas convenções. Quase sempre: instruções orientam, os checks e o review pegam o resto.
+-->
+
+---
+
+# O checklist do primeiro dia
+
+<p class="lead mb-4">O que você daria ao novato é o que você dá ao agente.</p>
+
+<v-clicks>
+
+1. Um arquivo de instruções curto: build, testes, convenções, o que não fazer
+2. Uma skill para a tarefa que você mais repete
+3. Instruções com escopo só onde a regra muda de verdade
+4. Todo trabalho dele passa por PR e por review humano, sempre
+
+</v-clicks>
+
+<!--
+Pergunta: então o que eu faço na segunda-feira?
+O que você daria para uma pessoa nova é o que você dá para o agente.
+[click] Um arquivo de instruções curto.
+[click] Uma skill, para a tarefa que você mais repete.
+[click] Instruções com escopo só onde a regra é diferente de verdade.
+[click] E todo trabalho dele passa por PR e por review humano. Sempre.
+-->
+
+---
+
+# Não escreva tudo de uma vez
+
+<p class="lead big">Comece pelos comandos de build e teste.</p>
+
+<v-clicks>
+
+- O mesmo comentário de review apareceu duas vezes? Vira uma linha.
+- Regra que ninguém precisou ainda é só contexto a mais para carregar.
+
+</v-clicks>
+
+<!--
+Quando não fazer: não escreve tudo antes.
+Começa pelos comandos de build e teste.
+[click] Apareceu o mesmo comentário de review duas vezes? Vira uma linha no arquivo.
+[click] Uma regra que ninguém precisou ainda é só mais contexto para carregar.
+-->
+
+---
+class: title-slide
+---
+
+# O agente é o novato <span class="accent">em toda sessão</span>.
+
+<p v-click class="lead big">Escreva a integração dele no repositório,<br>e revise o trabalho dele como o de qualquer pessoa.</p>
+
+<!--
+A mensagem final. Devagar.
+[click] Escreva a integração dele no repositório, e revise o trabalho dele como o de qualquer pessoa.
+Depois para de falar.
+-->
+
+---
+class: title-slide
+---
+
+<p class="eyebrow">Vamos conversar</p>
+
+# Qual comentário de review você já escreveu duas vezes?
+
+<div class="mt-6">
+
+**Artigo:** rodrigofnascimento.github.io/onboarding-the-agent<br>
+**Repositório:** github.com/RodrigoFNascimento/onboarding-the-agent
+
+</div>
+
+<!--
+Abre a discussão. A resposta é a primeira linha do arquivo de instruções de alguém.
+O repositório de exemplo serve de ponto de partida.
 -->

@@ -85,6 +85,7 @@ html.dark {
 }
 .card-accent { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .card-accent h3 { color: var(--accent); }
+.slidev-layout h3.accent { color: var(--accent); }
 
 /* Code blocks */
 :root {
